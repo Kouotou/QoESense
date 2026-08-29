@@ -1,0 +1,86 @@
+<resources>
+    <string name="app_name">QoESense</string>
+
+    <!-- Shared actions/labels, reused across onboarding and the Status screen -->
+    <string name="action_continue">Continuer</string>
+    <string name="action_skip_for_now">Ignorer pour l\'instant</string>
+    <string name="action_grant">Autoriser</string>
+    <string name="action_open_settings">Ouvrir les paramètres</string>
+    <string name="permission_granted">Autorisé</string>
+    <string name="permission_not_granted">Non autorisé</string>
+
+    <!-- Onboarding: Welcome -->
+    <string name="welcome_title">Étude de recherche QoESense</string>
+    <string name="welcome_body">Cette application fait partie d\'un projet de recherche de Master (MSc) étudiant la qualité d\'expérience des réseaux mobiles. Fonctionnant discrètement en arrière-plan, elle enregistre des mesures du signal réseau (comme la force et la qualité du signal), la localisation approximative, et quelle application est au premier plan - uniquement pour indiquer *quand* et *dans quelles conditions* une mesure a été prise.\n\nElle ne lit jamais le contenu des messages, l\'historique de navigation, ou quoi que ce soit que vous tapez. Sur les écrans suivants, nous vous demanderons les autorisations dont l\'application a besoin pour fonctionner de manière fiable, en expliquant précisément pourquoi chacune est nécessaire avant de la demander.</string>
+    <string name="welcome_button">Commencer</string>
+
+    <!-- Onboarding: Consent -->
+    <string name="consent_title">Consentement à la recherche et confidentialité</string>
+    <string name="consent_button">J\'accepte, continuer</string>
+    <string name="consent_body">À PROPOS DE CETTE ÉTUDE\n\nQoESense fait partie d\'un projet de recherche de Master (MSc) étudiant comment les conditions du signal réseau affectent l\'expérience réelle des applications, afin qu\'à terme la qualité d\'expérience puisse être prédite directement à partir des données réseau. La participation est entièrement volontaire : vous pouvez arrêter à tout moment en désactivant la collecte dans l\'application ou en la désinstallant, sans aucune conséquence.\n\nCE QUE NOUS COLLECTONS\n\n- Mesures du signal réseau : force et qualité du signal (RSRP, RSRQ, SINR), avance temporelle (timing advance), type de réseau LTE, un identifiant d\'antenne relais haché à sens unique (pas l\'identifiant réel), et, sur certains appareils, des détails supplémentaires sur les canaux.\n- Informations de connexion : Wi-Fi ou données mobiles, statut d\'itinérance (roaming), une estimation du débit et de la latence.\n- Localisation approximative, relevée en même temps que chaque mesure réseau, afin de cartographier la couverture le long de vos trajets habituels.\n- Quelle application est au premier plan, vérifié périodiquement - utilisé uniquement pour détecter si une application de réseau social ou un appel vidéo est actif, afin de pouvoir associer les conditions réseau à ce type d\'usage. Nous ne voyons jamais ce que vous tapez, envoyez ou consultez dans une application.\n- Le modèle de votre appareil, la version d\'Android, et le numéro de version de l\'application elle-même.\n- Vos évaluations occasionnelles de la qualité du réseau (de 1 à 5), lorsque vous répondez à une invite.\n\nCE QUE NOUS NE COLLECTONS JAMAIS\n\nLe contenu des messages, le contenu des appels, l\'historique de navigation, les photos, les contacts, les frappes au clavier, ou tout ce qui est saisi dans une application - cette application n\'a accès à rien de tout cela et ne le demande pas.\n\nCOMMENT VOS DONNÉES SONT IDENTIFIÉES\n\nOn ne vous demande jamais votre nom, votre numéro de téléphone ou votre e-mail. Chaque installation reçoit un identifiant anonyme aléatoire généré par l\'application, et toutes vos données sont liées uniquement à cet identifiant - jamais à vous personnellement. Nous n\'avons aucun moyen de retrouver à qui appartient un identifiant donné à partir des données seules. Votre identifiant anonyme est affiché sur l\'écran d\'état de l\'application si vous avez besoin de le consulter.\n\nOÙ VONT VOS DONNÉES ET COMMENT ELLES SONT PROTÉGÉES\n\nLes données sont envoyées uniquement via Wi-Fi (jamais en utilisant vos données mobiles), chiffrées pendant le transfert, et stockées sur l\'infrastructure Google Firebase/Cloud avec un accès restreint à l\'équipe de recherche. Les données brutes du signal sont mises en attente localement sur votre appareil et ne sont supprimées qu\'une fois l\'envoi confirmé avec succès.\n\nCOMMENT VOS DONNÉES SONT UTILISÉES\n\nVos données seront utilisées pour construire et évaluer plusieurs modèles d\'apprentissage profond (deep learning) permettant de prédire la qualité d\'expérience réseau, dans le cadre d\'un projet de recherche de Master. Des résultats agrégés ou anonymisés pourront être publiés dans des travaux académiques ; les données brutes individuelles ne seront jamais partagées publiquement ni avec des tiers.\n\nAUTORISATIONS SPÉCIALES DEMANDÉES PAR CETTE APPLICATION, ET POURQUOI\n\n- Localisation (au premier plan et en arrière-plan) : exigée par Android lui-même pour renvoyer toute information sur le signal cellulaire, et utilisée pour cartographier la couverture réseau le long de vos trajets.\n- Accès à l\'utilisation (Usage Access) : permet à l\'application de détecter quelle application est au premier plan, pour les raisons décrites ci-dessus - pas pour surveiller votre activité à d\'autres fins.\n- Affichage par-dessus d\'autres applications : permet à l\'invite occasionnelle d\'évaluation de la qualité d\'apparaître immédiatement, afin que votre réponse reste proche dans le temps des conditions réseau concernées, plutôt que de devoir vous souvenir d\'ouvrir l\'application plus tard.\n- Notifications : utilisées uniquement pour un indicateur de statut « collecte active » à faible priorité et pour les invites d\'évaluation de la qualité.\n- Exemption d\'optimisation de la batterie : nécessaire pour que l\'application puisse continuer à collecter les données de manière fiable pendant les semaines que dure l\'étude, car Android suspend autrement agressivement les applications en arrière-plan.\n\nVOS DROITS\n\nLa participation est volontaire. Vous pouvez arrêter la collecte de données à tout moment depuis l\'écran d\'état de l\'application, ou vous retirer complètement en désinstallant l\'application - dans les deux cas, aucune donnée supplémentaire ne sera collectée depuis votre appareil. Pour demander la suppression des données déjà envoyées et liées à votre appareil, contactez bilalkouotou@gmail.com en indiquant votre identifiant anonyme visible sur l\'écran d\'état.\n\nQUESTIONS OU PRÉOCCUPATIONS\n\nCette étude est menée par ENGR. KOUOTOU AHMAD BILAL, de l\'UNIVERSITY OF BUEA, sous l\'approbation DU VICE-CHANCELIER. Contactez bilalkouotou@gmail.com pour toute question.\n\nEn appuyant sur « J\'accepte, continuer » ci-dessous, vous confirmez avoir lu ce document et acceptez volontairement de participer.</string>
+
+    <!-- Onboarding: Location permission -->
+    <string name="location_title">Localisation et informations réseau</string>
+    <string name="location_body">Android exige l\'autorisation de localisation avant de renvoyer la moindre mesure du signal cellulaire (RSRP, RSRQ, SINR) - il s\'agit d\'une restriction de la plateforme, pas d\'une particularité de cette application. La localisation approximative est aussi utilisée pour cartographier la couverture le long de vos trajets habituels, pour la partie « drive-test » de l\'étude.\n\nNous demandons également l\'accès à l\'état du téléphone, nécessaire sur certaines versions d\'Android pour lire l\'ensemble des informations cellulaires.</string>
+    <string name="location_button_grant">Autoriser les permissions</string>
+    <string name="location_hint_denied">Sans cela, les données de signal et la cartographie des trajets ne peuvent pas être collectées. Vous pouvez l\'autoriser plus tard depuis l\'écran Permissions de l\'application.</string>
+
+    <!-- Onboarding: Background access (location "always allow" + notifications) -->
+    <string name="background_title">Accès en arrière-plan</string>
+    <string name="background_body">Les données doivent être enregistrées même lorsque l\'application n\'est pas ouverte, Android exige donc une autorisation de localisation distincte « Toujours autoriser » pour la collecte en arrière-plan (sur Android 11+, cela peut ouvrir un écran des paramètres système plutôt qu\'une boîte de dialogue - choisissez « Toujours autoriser » à cet endroit).\n\nNous demandons également l\'accès aux notifications, utilisé uniquement pour la notification de statut « collecte active » à faible priorité et pour l\'invite occasionnelle d\'évaluation de la qualité en un clic - jamais pour des publicités ou des alertes sans rapport.</string>
+    <string name="background_button_grant">Autoriser l\'accès</string>
+    <string name="background_hint_no_foreground">La localisation au premier plan n\'a pas été autorisée sur l\'écran précédent, la localisation en arrière-plan ne peut donc pas encore être demandée.</string>
+
+    <!-- Onboarding: Usage access, battery, overlay -->
+    <string name="usage_title">Accès à l\'utilisation, batterie et pop-ups</string>
+    <string name="usage_body">Pour associer les mesures à l\'application active - en particulier pour détecter une session de réseau social ou d\'appel vidéo à des fins d\'étiquetage de la qualité - l\'application a besoin de l\'Accès à l\'utilisation. Il s\'agit d\'un paramètre protégé par le système, Android vous emmènera donc vers un écran des paramètres où vous pourrez trouver « QoESense » et l\'activer.\n\nNous vous demandons également d\'exempter l\'application de l\'optimisation de la batterie, car Android suspend sinon agressivement les applications en arrière-plan, ce qui créerait des lacunes de données manquantes pendant les semaines que dure l\'étude.\n\nEnfin, « affichage par-dessus d\'autres applications » permet à l\'évaluation occasionnelle de la qualité en un clic d\'apparaître exactement au bon moment, par-dessus l\'application que vous utilisez à ce moment-là, plutôt que de s\'afficher uniquement sous forme de notification que vous devriez ouvrir vous-même. Elle disparaît d\'elle-même au bout de quelques secondes dans tous les cas.</string>
+    <string name="usage_button_finish">Terminer la configuration</string>
+    <string name="usage_access_status_granted">Accès à l\'utilisation : autorisé</string>
+    <string name="usage_access_status_not_granted">Accès à l\'utilisation : non autorisé</string>
+    <string name="usage_access_button">Ouvrir les paramètres d\'accès à l\'utilisation</string>
+    <string name="battery_status_granted">Optimisation de la batterie : désactivée (bien)</string>
+    <string name="battery_status_not_granted">Optimisation de la batterie : activée</string>
+    <string name="battery_button">Désactiver l\'optimisation de la batterie</string>
+    <string name="overlay_status_granted">Affichage par-dessus d\'autres applications : autorisé</string>
+    <string name="overlay_status_not_granted">Affichage par-dessus d\'autres applications : non autorisé</string>
+    <string name="overlay_button">Autoriser l\'affichage par-dessus d\'autres applications</string>
+
+    <!-- Status screen -->
+    <string name="status_subtitle">État de la collecte en arrière-plan</string>
+    <string name="status_collection_title">Collecte</string>
+    <string name="status_collection_active_desc">Le service en arrière-plan effectue une mesure environ toutes les 20 s et les met en mémoire tampon dans Room. Une tâche limitée au Wi-Fi envoie les lots vers Cloud Storage environ toutes les heures.</string>
+    <string name="status_collection_inactive_desc">La collecte en arrière-plan est désactivée. Elle démarre normalement automatiquement après la configuration initiale - ce bouton sert surtout aux tests.</string>
+    <string name="status_label_buffered_samples">Échantillons en mémoire tampon</string>
+    <string name="status_label_last_upload">Dernier envoi</string>
+    <string name="status_label_anonymous_id">Votre identifiant anonyme</string>
+    <string name="status_button_stop_collection">Arrêter la collecte en arrière-plan</string>
+    <string name="status_button_start_collection">Démarrer la collecte en arrière-plan</string>
+    <string name="status_button_run_test">Lancer un test de télémétrie</string>
+    <string name="status_button_send_test_survey">Envoyer un sondage MOS de test</string>
+    <string name="status_permissions_title">Permissions et accès</string>
+    <string name="status_permission_location">Localisation</string>
+    <string name="status_permission_background_location">Localisation en arrière-plan</string>
+    <string name="status_permission_notifications">Notifications</string>
+    <string name="status_permission_phone_state">État du téléphone</string>
+    <string name="status_permission_usage_access">Accès à l\'utilisation</string>
+    <string name="status_permission_battery">Optimisation de la batterie désactivée</string>
+    <string name="status_permission_overlay">Affichage par-dessus d\'autres applications</string>
+    <string name="status_last_upload_never">jamais</string>
+    <string name="status_last_upload_just_now">à l\'instant</string>
+    <string name="status_last_upload_minutes_ago">il y a %1$d min</string>
+    <string name="status_last_upload_hours_ago">il y a %1$dh</string>
+
+    <!-- MOS survey popup -->
+    <string name="mos_survey_title">Comment était votre expérience réseau à l\'instant ?</string>
+    <string name="mos_survey_caption">1 = très mauvaise, 5 = excellente</string>
+
+    <!-- Notifications (built outside Compose, read via context.getString()) -->
+    <string name="notif_collection_channel_name">Collecte en arrière-plan</string>
+    <string name="notif_collection_channel_desc">S\'affiche lorsque QoESense collecte des données de télémétrie réseau en arrière-plan</string>
+    <string name="notif_collection_title">QoESense est en cours d\'exécution</string>
+    <string name="notif_collection_text">Collecte des données de qualité réseau pour l\'étude de recherche</string>
+    <string name="notif_survey_channel_name">Invites d\'évaluation de la qualité</string>
+    <string name="notif_survey_channel_desc">Invites occasionnelles en un clic demandant comment était votre expérience réseau</string>
+    <string name="notif_survey_title">Question rapide</string>
+    <string name="notif_survey_text">Comment était votre expérience réseau à l\'instant ? Appuyez pour évaluer de 1 à 5.</string>
+</resources>

@@ -12,6 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.qoesense.R
 import com.example.qoesense.util.PermissionUtils
 
 @Composable
@@ -28,15 +30,9 @@ fun LocationPermissionScreen(onContinue: () -> Unit) {
     }
 
     OnboardingScaffold(
-        title = "Location & network info",
-        body = "Android requires location permission before it will return cell " +
-            "signal readings (RSRP, RSRQ, SINR) at all - this is a platform " +
-            "restriction, not something specific to this app. Approximate location " +
-            "is also used to map coverage along your usual routes for the drive-test " +
-            "portion of the study.\n\n" +
-            "We also request phone-state access, needed on some Android versions to " +
-            "read full cell information.",
-        primaryButtonText = if (granted) "Continue" else "Grant permissions",
+        title = stringResource(R.string.location_title),
+        body = stringResource(R.string.location_body),
+        primaryButtonText = if (granted) stringResource(R.string.action_continue) else stringResource(R.string.location_button_grant),
         onPrimaryClick = {
             if (granted) {
                 onContinue()
@@ -50,14 +46,13 @@ fun LocationPermissionScreen(onContinue: () -> Unit) {
                 )
             }
         },
-        secondaryButtonText = if (!granted) "Skip for now" else null,
+        secondaryButtonText = if (!granted) stringResource(R.string.action_skip_for_now) else null,
         onSecondaryClick = if (!granted) onContinue else null,
         extraContent = {
             Column {
                 if (!granted) {
                     Text(
-                        text = "Without this, signal telemetry and route mapping cannot be " +
-                            "collected. You can grant it later from the app's Permissions screen.",
+                        text = stringResource(R.string.location_hint_denied),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }

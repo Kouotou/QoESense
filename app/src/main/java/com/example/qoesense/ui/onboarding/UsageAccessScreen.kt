@@ -13,7 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.qoesense.R
 import com.example.qoesense.util.PermissionUtils
 
 /**
@@ -30,24 +32,18 @@ fun UsageAccessScreen(onFinish: () -> Unit) {
     val overlayGranted = PermissionUtils.hasOverlayPermission(context)
 
     OnboardingScaffold(
-        title = "Usage access, battery & pop-ups",
-        body = "To tag measurements with which app is active - specifically to detect " +
-            "a social-media or video-call session for quality labelling - the app needs " +
-            "Usage Access. This is a system-protected setting, so Android will take you " +
-            "to a Settings screen where you can find \"QoESense\" and turn it on.\n\n" +
-            "We also ask you to exempt the app from battery optimization, since Android " +
-            "aggressively suspends background apps otherwise, which would create gaps " +
-            "of missing data over the weeks-long study.\n\n" +
-            "Finally, \"display over other apps\" lets the occasional one-tap quality " +
-            "rating pop up right when it's relevant, over whatever app you're using at " +
-            "the time, instead of only showing as a notification you'd have to open " +
-            "yourself. It disappears on its own within a few seconds either way.",
-        primaryButtonText = "Finish setup",
+        title = stringResource(R.string.usage_title),
+        body = stringResource(R.string.usage_body),
+        primaryButtonText = stringResource(R.string.usage_button_finish),
         onPrimaryClick = onFinish,
         extraContent = {
             Column {
                 Text(
-                    text = if (usageAccessGranted) "Usage access: granted" else "Usage access: not granted",
+                    text = if (usageAccessGranted) {
+                        stringResource(R.string.usage_access_status_granted)
+                    } else {
+                        stringResource(R.string.usage_access_status_not_granted)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Button(
@@ -56,13 +52,17 @@ fun UsageAccessScreen(onFinish: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Open Usage Access settings")
+                    Text(stringResource(R.string.usage_access_button))
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = if (batteryExempt) "Battery optimization: disabled (good)" else "Battery optimization: enabled",
+                    text = if (batteryExempt) {
+                        stringResource(R.string.battery_status_granted)
+                    } else {
+                        stringResource(R.string.battery_status_not_granted)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Button(
@@ -75,13 +75,17 @@ fun UsageAccessScreen(onFinish: () -> Unit) {
                     enabled = !batteryExempt,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Disable battery optimization")
+                    Text(stringResource(R.string.battery_button))
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = if (overlayGranted) "Display over other apps: granted" else "Display over other apps: not granted",
+                    text = if (overlayGranted) {
+                        stringResource(R.string.overlay_status_granted)
+                    } else {
+                        stringResource(R.string.overlay_status_not_granted)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Button(
@@ -95,7 +99,7 @@ fun UsageAccessScreen(onFinish: () -> Unit) {
                     enabled = !overlayGranted,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Allow display over other apps")
+                    Text(stringResource(R.string.overlay_button))
                 }
             }
         },

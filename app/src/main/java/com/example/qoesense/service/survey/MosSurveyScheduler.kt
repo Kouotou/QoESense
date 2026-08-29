@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.example.qoesense.R
 import com.example.qoesense.data.MosSurveyPreferences
 import com.example.qoesense.data.model.MosTriggerType
 import com.example.qoesense.telemetry.TelemetryAnomalyDetector
@@ -110,8 +111,8 @@ class MosSurveyScheduler(private val context: Context) {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("Quick question")
-            .setContentText("How was your network experience just now? Tap to rate 1-5.")
+            .setContentTitle(context.getString(R.string.notif_survey_title))
+            .setContentText(context.getString(R.string.notif_survey_text))
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
@@ -125,10 +126,10 @@ class MosSurveyScheduler(private val context: Context) {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Quality rating prompts",
+            context.getString(R.string.notif_survey_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
-            description = "Occasional one-tap prompts asking how your network experience was"
+            description = context.getString(R.string.notif_survey_channel_desc)
         }
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }

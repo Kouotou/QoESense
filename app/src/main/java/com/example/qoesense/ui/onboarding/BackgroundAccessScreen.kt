@@ -13,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.qoesense.R
 import com.example.qoesense.util.PermissionUtils
 
 /**
@@ -38,15 +40,9 @@ fun BackgroundAccessScreen(onContinue: () -> Unit) {
     val allDone = backgroundGranted && notificationsGranted
 
     OnboardingScaffold(
-        title = "Background access",
-        body = "Telemetry needs to be recorded while the app isn't open, so Android " +
-            "requires a separate \"Allow all the time\" location grant for background " +
-            "collection (on Android 11+ this may open a system Settings screen rather " +
-            "than a dialog - choose \"Allow all the time\" there).\n\n" +
-            "We also ask for notification access, used only for the low-priority " +
-            "\"collection active\" status notification and the occasional one-tap " +
-            "quality rating prompt - never for ads or unrelated alerts.",
-        primaryButtonText = if (allDone) "Continue" else "Grant access",
+        title = stringResource(R.string.background_title),
+        body = stringResource(R.string.background_body),
+        primaryButtonText = if (allDone) stringResource(R.string.action_continue) else stringResource(R.string.background_button_grant),
         onPrimaryClick = {
             when {
                 allDone -> onContinue()
@@ -63,14 +59,13 @@ fun BackgroundAccessScreen(onContinue: () -> Unit) {
                 }
             }
         },
-        secondaryButtonText = if (!allDone) "Skip for now" else null,
+        secondaryButtonText = if (!allDone) stringResource(R.string.action_skip_for_now) else null,
         onSecondaryClick = if (!allDone) onContinue else null,
         extraContent = {
             Column {
                 if (!foregroundLocationGranted) {
                     Text(
-                        text = "Foreground location wasn't granted on the previous screen, " +
-                            "so background location can't be requested yet.",
+                        text = stringResource(R.string.background_hint_no_foreground),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }

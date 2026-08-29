@@ -12,6 +12,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.qoesense.MainActivity
+import com.example.qoesense.R
 import com.example.qoesense.data.TelemetryRepository
 import com.example.qoesense.data.model.AppSessionType
 import com.example.qoesense.service.survey.MosSurveyScheduler
@@ -116,10 +117,10 @@ class TelemetryForegroundService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Background collection",
+            getString(R.string.notif_collection_channel_name),
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = "Shows when QoESense is collecting network telemetry in the background"
+            description = getString(R.string.notif_collection_channel_desc)
             setShowBadge(false)
         }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -133,8 +134,8 @@ class TelemetryForegroundService : Service() {
             PendingIntent.FLAG_IMMUTABLE,
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("QoESense is running")
-            .setContentText("Collecting network quality data for the research study")
+            .setContentTitle(getString(R.string.notif_collection_title))
+            .setContentText(getString(R.string.notif_collection_text))
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)

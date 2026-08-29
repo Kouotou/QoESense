@@ -31,8 +31,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.qoesense.R
 import com.example.qoesense.data.model.TelemetrySample
 import com.example.qoesense.ui.onboarding.rememberOnResumeTick
 import com.example.qoesense.util.PermissionUtils
@@ -69,10 +71,10 @@ fun StatusScreen() {
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
-        Text(text = "QoESense", style = MaterialTheme.typography.headlineSmall)
+        Text(text = stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Background collection status",
+            text = stringResource(R.string.status_subtitle),
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -80,28 +82,32 @@ fun StatusScreen() {
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Collection", style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(R.string.status_collection_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = if (isCollectionEnabled) {
-                        "The background service is sampling every ~20s and buffering into Room. " +
-                            "A Wi-Fi-only worker uploads batches to Cloud Storage roughly hourly."
+                        stringResource(R.string.status_collection_active_desc)
                     } else {
-                        "Background collection is off. It normally starts automatically after " +
-                            "onboarding - this toggle is mainly for testing."
+                        stringResource(R.string.status_collection_inactive_desc)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                StatusRow(label = "Buffered samples", value = bufferedCount.toString())
-                StatusRow(label = "Last upload", value = formatLastUpload(lastUploadTimestampMs))
-                StatusRow(label = "Your anonymous ID", value = deviceId ?: "…")
+                StatusRow(label = stringResource(R.string.status_label_buffered_samples), value = bufferedCount.toString())
+                StatusRow(label = stringResource(R.string.status_label_last_upload), value = formatLastUpload(lastUploadTimestampMs))
+                StatusRow(label = stringResource(R.string.status_label_anonymous_id), value = deviceId ?: "…")
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { statusViewModel.setCollectionEnabled(!isCollectionEnabled) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(if (isCollectionEnabled) "Stop background collection" else "Start background collection")
+                    Text(
+                        if (isCollectionEnabled) {
+                            stringResource(R.string.status_button_stop_collection)
+                        } else {
+                            stringResource(R.string.status_button_start_collection)
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -113,7 +119,7 @@ fun StatusScreen() {
                     if (isSampling) {
                         CircularProgressIndicator(modifier = Modifier.height(20.dp))
                     } else {
-                        Text("Run telemetry test")
+                        Text(stringResource(R.string.status_button_run_test))
                     }
                 }
 
@@ -122,7 +128,7 @@ fun StatusScreen() {
                     onClick = { statusViewModel.sendTestMosSurvey() },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Send test MOS survey")
+                    Text(stringResource(R.string.status_button_send_test_survey))
                 }
 
                 lastSample?.let { sample ->
@@ -138,13 +144,13 @@ fun StatusScreen() {
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Permissions & access", style = MaterialTheme.typography.titleMedium)
+                Text(text = stringResource(R.string.status_permissions_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 PermissionRow(
-                    label = "Location",
+                    label = stringResource(R.string.status_permission_location),
                     granted = PermissionUtils.hasForegroundLocation(context),
-                    actionLabel = "Grant",
+                    actionLabel = stringResource(R.string.action_grant),
                     onAction = {
                         runtimePermissionLauncher.launch(
                             arrayOf(
@@ -156,9 +162,9 @@ fun StatusScreen() {
                 )
                 HorizontalDivider()
                 PermissionRow(
-                    label = "Background location",
+                    label = stringResource(R.string.status_permission_background_location),
                     granted = PermissionUtils.hasBackgroundLocation(context),
-                    actionLabel = "Grant",
+                    actionLabel = stringResource(R.string.action_grant),
                     onAction = {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -167,9 +173,9 @@ fun StatusScreen() {
                 )
                 HorizontalDivider()
                 PermissionRow(
-                    label = "Notifications",
+                    label = stringResource(R.string.status_permission_notifications),
                     granted = PermissionUtils.hasNotifications(context),
-                    actionLabel = "Grant",
+                    actionLabel = stringResource(R.string.action_grant),
                     onAction = {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             runtimePermissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
@@ -178,25 +184,25 @@ fun StatusScreen() {
                 )
                 HorizontalDivider()
                 PermissionRow(
-                    label = "Phone state",
+                    label = stringResource(R.string.status_permission_phone_state),
                     granted = PermissionUtils.hasPhoneState(context),
-                    actionLabel = "Grant",
+                    actionLabel = stringResource(R.string.action_grant),
                     onAction = {
                         runtimePermissionLauncher.launch(arrayOf(Manifest.permission.READ_PHONE_STATE))
                     },
                 )
                 HorizontalDivider()
                 PermissionRow(
-                    label = "Usage access",
+                    label = stringResource(R.string.status_permission_usage_access),
                     granted = PermissionUtils.hasUsageAccess(context),
-                    actionLabel = "Open settings",
+                    actionLabel = stringResource(R.string.action_open_settings),
                     onAction = { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) },
                 )
                 HorizontalDivider()
                 PermissionRow(
-                    label = "Battery optimization disabled",
+                    label = stringResource(R.string.status_permission_battery),
                     granted = PermissionUtils.isIgnoringBatteryOptimizations(context),
-                    actionLabel = "Open settings",
+                    actionLabel = stringResource(R.string.action_open_settings),
                     onAction = {
                         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                             data = Uri.parse("package:${context.packageName}")
@@ -206,9 +212,9 @@ fun StatusScreen() {
                 )
                 HorizontalDivider()
                 PermissionRow(
-                    label = "Display over other apps",
+                    label = stringResource(R.string.status_permission_overlay),
                     granted = PermissionUtils.hasOverlayPermission(context),
-                    actionLabel = "Open settings",
+                    actionLabel = stringResource(R.string.action_open_settings),
                     onAction = {
                         val intent = Intent(
                             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -248,7 +254,7 @@ private fun PermissionRow(
         Column {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
             Text(
-                text = if (granted) "Granted" else "Not granted",
+                text = if (granted) stringResource(R.string.permission_granted) else stringResource(R.string.permission_not_granted),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -258,16 +264,19 @@ private fun PermissionRow(
     }
 }
 
+@Composable
 private fun formatLastUpload(timestampMs: Long?): String {
-    if (timestampMs == null) return "never"
+    if (timestampMs == null) return stringResource(R.string.status_last_upload_never)
     val elapsedMinutes = (System.currentTimeMillis() - timestampMs) / 60_000
     return when {
-        elapsedMinutes < 1 -> "just now"
-        elapsedMinutes < 60 -> "$elapsedMinutes min ago"
-        else -> "${elapsedMinutes / 60}h ago"
+        elapsedMinutes < 1 -> stringResource(R.string.status_last_upload_just_now)
+        elapsedMinutes < 60 -> stringResource(R.string.status_last_upload_minutes_ago, elapsedMinutes)
+        else -> stringResource(R.string.status_last_upload_hours_ago, elapsedMinutes / 60)
     }
 }
 
+// Raw telemetry field dump for the "Run telemetry test" debug button - technical field names
+// (RSRP, RSRQ, TAC, ...) aren't natural-language content, so this is left untranslated.
 private fun formatSample(sample: TelemetrySample): String = buildString {
     appendLine("Capability tier: ${sample.telemetryCapabilityTier}")
     appendLine("Network type: ${sample.networkType ?: "n/a"}")

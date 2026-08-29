@@ -23,8 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.qoesense.R
 import kotlinx.coroutines.delay
 
 /**
@@ -58,7 +60,7 @@ fun MosSurveyScreen(onScoreSelected: (Int) -> Unit, onDismiss: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "How was your network experience just now?",
+                    text = stringResource(R.string.mos_survey_title),
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                 )
@@ -76,7 +78,7 @@ fun MosSurveyScreen(onScoreSelected: (Int) -> Unit, onDismiss: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "1 = very poor, 5 = excellent",
+                    text = stringResource(R.string.mos_survey_caption),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
