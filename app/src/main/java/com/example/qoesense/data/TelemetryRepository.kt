@@ -50,6 +50,10 @@ class TelemetryRepository(context: Context) {
         dao.deleteOlderThan(System.currentTimeMillis() - maxAgeMs)
 
     companion object {
-        const val DEFAULT_RETENTION_MS = 14L * 24 * 60 * 60 * 1000
+        // Temporarily widened from 14 to 45 days (Sept 2026) while the Firebase project's
+        // billing is suspended pending a payment fix - protects already-buffered participant
+        // samples from being purged unuploaded during the outage. Safe to shrink back to 14
+        // once uploads are confirmed flowing normally again for a few days.
+        const val DEFAULT_RETENTION_MS = 45L * 24 * 60 * 60 * 1000
     }
 }
