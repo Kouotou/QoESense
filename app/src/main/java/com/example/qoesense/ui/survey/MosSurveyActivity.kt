@@ -3,8 +3,8 @@ package com.example.qoesense.ui.survey
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import com.example.qoesense.data.model.MosTriggerType
+import com.example.qoesense.service.survey.MosSubmitWorker
 import com.example.qoesense.ui.theme.QoESenseTheme
 
 /**
@@ -15,8 +15,6 @@ import com.example.qoesense.ui.theme.QoESenseTheme
  */
 class MosSurveyActivity : ComponentActivity() {
 
-    private val viewModel: MosSurveyViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val triggerType = MosTriggerType.valueOf(
@@ -26,7 +24,7 @@ class MosSurveyActivity : ComponentActivity() {
             QoESenseTheme {
                 MosSurveyScreen(
                     onScoreSelected = { score ->
-                        viewModel.submit(score, triggerType)
+                        MosSubmitWorker.enqueue(applicationContext, score, triggerType)
                         finish()
                     },
                     onDismiss = { finish() },
