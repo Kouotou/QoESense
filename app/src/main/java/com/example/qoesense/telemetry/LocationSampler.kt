@@ -35,15 +35,15 @@ class LocationSampler(context: Context) {
     )
 
     @SuppressLint("MissingPermission") // guarded by PermissionUtils.hasForegroundLocation below
-    suspend fun sampleOnce(): LocationReading? {
+    suspend fun sampleOnce(timeoutMs: Long = DEFAULT_TIMEOUT_MS): LocationReading? {
         if (!PermissionUtils.hasForegroundLocation(appContext)) return null
         val cancellationSource = CancellationTokenSource()
-        return withTimeoutOrNull(REQUEST_TIMEOUT_MS) {
+        return withTimeoutOrNull(timeoutMs) {
             suspendCancellableCoroutine { continuation ->
                 continuation.invokeOnCancellation { cancellationSource.cancel() }
                 val request = CurrentLocationRequest.Builder()
                     .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
-                    .setDurationMillis(REQUEST_TIMEOUT_MS)
+                    .setDurationMillis(timeoutMs)
                     .build()
                 fusedLocationClient.getCurrentLocation(request, cancellationSource.token)
                     .addOnSuccessListener { location ->
@@ -59,7 +59,7 @@ class LocationSampler(context: Context) {
         }
     }
 
-    private companion object {
-        const val REQUEST_TIMEOUT_MS = 15_000L
+    companion object {
+        const val DEFAULT_TIMEOUT_MS = 15_000L
     }
 }
