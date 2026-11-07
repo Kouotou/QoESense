@@ -3,6 +3,7 @@ const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { logger } = require("firebase-functions");
 const { BigQuery } = require("@google-cloud/bigquery");
 const { Storage } = require("@google-cloud/storage");
+const { missingNullableFields } = require("./schema");
 
 const bigquery = new BigQuery();
 const storage = new Storage();
@@ -51,6 +52,9 @@ const SAMPLES_SCHEMA = [
   { name: "androidVersion", type: "INTEGER", mode: "REQUIRED" },
   { name: "appVersion", type: "STRING", mode: "REQUIRED" },
   { name: "telemetryCapabilityTier", type: "STRING", mode: "REQUIRED" },
+  // Additive, nullable (Nov 2026, cross-platform migration): "ANDROID" or "IOS". NULL on every
+  // row written before clients started sending it - all of those rows are Android.
+  { name: "platform", type: "STRING" },
 ];
 
 // Mirrors com.example.qoesense.data.model.MosResponse, plus deviceId/responseId pulled from
@@ -66,9 +70,19 @@ const MOS_SCHEMA = [
   { name: "contextSessionType", type: "STRING", mode: "REQUIRED" },
   { name: "windowStartMs", type: "INTEGER", mode: "REQUIRED" },
   { name: "windowEndMs", type: "INTEGER", mode: "REQUIRED" },
+  // Additive, nullable - same meaning and NULL convention as samples.platform.
+  { name: "platform", type: "STRING" },
 ];
 
-/** Creates the dataset/table on first use if they don't exist yet; a no-op after that. */
+// Per-instance memo so the schema check costs one metadata read per table per cold start.
+const reconciledTables = new Set();
+
+/**
+ * Creates the dataset/table on first use if they don't exist yet. If the table already
+ * exists, appends any NULLABLE columns from schemaFields that it doesn't have yet (additive
+ * only - nothing is ever removed, renamed or retyped), so a newly added nullable column such
+ * as `platform` reaches the live tables on the first invocation after a deploy.
+ */
 async function ensureTable(tableId, schemaFields) {
   const dataset = bigquery.dataset(DATASET_ID);
 
@@ -83,7 +97,16 @@ async function ensureTable(tableId, schemaFields) {
   if (!tableExists) {
     await dataset.createTable(tableId, { schema: { fields: schemaFields } });
     logger.info(`Created table ${DATASET_ID}.${tableId}`);
+  } else if (!reconciledTables.has(tableId)) {
+    const [metadata] = await table.getMetadata();
+    const existing = (metadata.schema && metadata.schema.fields) || [];
+    const toAdd = missingNullableFields(existing, schemaFields);
+    if (toAdd.length > 0) {
+      await table.setMetadata({ schema: { fields: [...existing, ...toAdd] } });
+      logger.info(`Added nullable column(s) ${toAdd.map((f) => f.name).join(", ")} to ${DATASET_ID}.${tableId}`);
+    }
   }
+  reconciledTables.add(tableId);
   return table;
 }
 
@@ -152,6 +175,9 @@ exports.exportMosResponse = onDocumentCreated(
           contextSessionType: data.contextSessionType,
           windowStartMs: data.windowStartMs,
           windowEndMs: data.windowEndMs,
+          // Only sent when the client provided it: right after a column is added, streaming
+          // inserts can briefly reject it as unknown, and current Android builds don't send it.
+          ...(data.platform != null ? { platform: data.platform } : {}),
         },
       ]);
     } catch (error) {
