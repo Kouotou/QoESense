@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.qoesense.MainActivity
@@ -72,11 +73,13 @@ class TelemetryForegroundService : Service() {
         if (samplingJob?.isActive == true) return
         samplingJob = serviceScope.launch {
             while (isActive) {
+                val tickStartMs = SystemClock.elapsedRealtime()
                 sampleCount++
                 try {
-                    val measureRtt = SamplingScheduler.shouldAlwaysMeasureRtt(lastSessionType) ||
-                        sampleCount % RTT_SAMPLE_EVERY_N == 0
-                    val sample = sampler.captureSample(measureRtt = measureRtt)
+                    val sample = sampler.captureSample(
+                        measureRtt = SamplingScheduler.shouldMeasureRtt(lastSessionType, sampleCount),
+                        locationTimeoutMs = SamplingScheduler.locationTimeoutFor(lastSessionType),
+                    )
                     repository.record(sample)
                     surveyScheduler.maybeTriggerPeriodic()
 
@@ -101,7 +104,13 @@ class TelemetryForegroundService : Service() {
                     // One bad sample must not take down weeks of collection.
                     Log.e(TAG, "Sampling iteration $sampleCount failed, will retry next interval", e)
                 }
-                delay(SamplingScheduler.intervalFor(lastSessionType))
+                delay(
+                    SamplingScheduler.delayUntilNextTick(
+                        tickStartMs = tickStartMs,
+                        nowMs = SystemClock.elapsedRealtime(),
+                        intervalMs = SamplingScheduler.intervalFor(lastSessionType),
+                    )
+                )
             }
         }
     }
@@ -147,7 +156,6 @@ class TelemetryForegroundService : Service() {
         private const val TAG = "QoESenseService"
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "telemetry_collection"
-        private const val RTT_SAMPLE_EVERY_N = 15 // roughly every 5 minutes at the standard interval
 
         fun start(context: Context) {
             val intent = Intent(context, TelemetryForegroundService::class.java)

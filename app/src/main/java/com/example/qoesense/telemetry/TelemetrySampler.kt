@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import com.example.qoesense.data.model.TelemetrySample
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 /**
  * Folds every telemetry source's reading into one [TelemetrySample]. Shared by the manual
@@ -26,17 +28,26 @@ class TelemetrySampler(context: Context) {
     /**
      * [measureRtt] defaults to true for on-demand captures (manual test button). The periodic
      * sampling loop passes false most of the time - RTT probing hits the network on every call
-     * and shouldn't run on every 15-30s tick, per the "not on every sample" constraint.
+     * and shouldn't run on every tick, per the "not on every sample" constraint.
+     *
+     * The two slow, radio/network-bound reads (location fix and RTT probe) run concurrently,
+     * so a tick costs max(location, RTT) rather than their sum; [locationTimeoutMs] lets the
+     * caller bound the location wait so a tick fits inside its sampling interval.
      */
-    suspend fun captureSample(measureRtt: Boolean = true): TelemetrySample {
+    suspend fun captureSample(
+        measureRtt: Boolean = true,
+        locationTimeoutMs: Long = LocationSampler.DEFAULT_TIMEOUT_MS,
+    ): TelemetrySample = coroutineScope {
         val cellularReading = cellularSource.readCurrent()
         val connectivityReading = connectivitySampler.readCurrent()
         val foregroundSession = appUsageMonitor.currentForegroundSession()
-        val locationReading = locationSampler.sampleOnce()
         val throughputReading = throughputSampler.sample()
-        val rttMs = if (measureRtt) latencySampler.measureRttMs() else null
+        val locationDeferred = async { locationSampler.sampleOnce(locationTimeoutMs) }
+        val rttDeferred = async { if (measureRtt) latencySampler.measureRttMs() else null }
+        val locationReading = locationDeferred.await()
+        val rttMs = rttDeferred.await()
 
-        return TelemetrySample(
+        TelemetrySample(
             timestampMs = System.currentTimeMillis(),
             rsrp = cellularReading?.rsrp,
             rsrq = cellularReading?.rsrq,

@@ -48,7 +48,6 @@ class StatusViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         sampler.start()
-        viewModelScope.launch { repository.enforceRetention() }
         viewModelScope.launch { _deviceId.value = deviceIdentityProvider.getDeviceId() }
     }
 

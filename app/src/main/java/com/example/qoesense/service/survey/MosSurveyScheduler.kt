@@ -134,11 +134,10 @@ class MosSurveyScheduler(private val context: Context) {
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
-    private fun dayEpoch(nowMs: Long): Int = (nowMs / DAY_MS).toInt()
+    private fun dayEpoch(nowMs: Long): Int = SurveyTriggerPolicy.localDayEpoch(nowMs)
 
     private companion object {
         const val CHANNEL_ID = "mos_survey"
         const val NOTIFICATION_ID = 2
-        const val DAY_MS = 24 * 60 * 60 * 1000L
     }
 }

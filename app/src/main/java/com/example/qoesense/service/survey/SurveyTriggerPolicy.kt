@@ -1,5 +1,8 @@
 package com.example.qoesense.service.survey
 
+import java.time.Instant
+import java.time.ZoneId
+
 /**
  * Pure decision logic for when a MOS prompt is allowed to fire, for any trigger type. All
  * trigger types share the same lastPromptMs/daily-cap state, so periodic, post-session, and
@@ -59,6 +62,15 @@ object SurveyTriggerPolicy {
         if (isOverDailyCap(promptsShownToday, promptsDayEpoch, currentDayEpoch)) return false
         return nowMs - lastPromptMs >= ANOMALY_COOLDOWN_MS
     }
+
+    /**
+     * The participant's *local* calendar day as an epoch-day number, used for the daily
+     * prompt cap - so the cap resets at the participant's midnight, not at 00:00 UTC (which
+     * is 01:00 in Cameroon, for example, and would be hours off elsewhere). Same epoch-day
+     * number space as the previous UTC-based value, so stored counters stay comparable.
+     */
+    fun localDayEpoch(nowMs: Long, zone: ZoneId = ZoneId.systemDefault()): Int =
+        Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate().toEpochDay().toInt()
 
     private fun isOverDailyCap(promptsShownToday: Int, promptsDayEpoch: Int, currentDayEpoch: Int): Boolean {
         val effectivePromptsToday = if (promptsDayEpoch == currentDayEpoch) promptsShownToday else 0

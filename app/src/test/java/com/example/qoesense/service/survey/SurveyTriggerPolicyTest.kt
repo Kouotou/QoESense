@@ -1,5 +1,8 @@
 package com.example.qoesense.service.survey
 
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -173,5 +176,33 @@ class SurveyTriggerPolicyTest {
             currentDayEpoch = dayEpoch,
         )
         assertFalse(result)
+    }
+
+    @Test
+    fun `local day - just before local midnight east of UTC is already the next day`() {
+        val douala = ZoneId.of("Africa/Douala") // UTC+1
+        // 23:30 UTC on 2026-11-07 is 00:30 on 2026-11-08 in Douala.
+        val nowMs = ZonedDateTime.of(2026, 11, 7, 23, 30, 0, 0, ZoneId.of("UTC")).toInstant().toEpochMilli()
+        val utcDay = SurveyTriggerPolicy.localDayEpoch(nowMs, ZoneId.of("UTC"))
+        assertEquals(utcDay + 1, SurveyTriggerPolicy.localDayEpoch(nowMs, douala))
+    }
+
+    @Test
+    fun `local day - west of UTC the day changes later than UTC`() {
+        val newYork = ZoneId.of("America/New_York") // UTC-5 in November
+        // 02:00 UTC on 2026-11-08 is still 21:00 on 2026-11-07 in New York.
+        val nowMs = ZonedDateTime.of(2026, 11, 8, 2, 0, 0, 0, ZoneId.of("UTC")).toInstant().toEpochMilli()
+        val utcDay = SurveyTriggerPolicy.localDayEpoch(nowMs, ZoneId.of("UTC"))
+        assertEquals(utcDay - 1, SurveyTriggerPolicy.localDayEpoch(nowMs, newYork))
+    }
+
+    @Test
+    fun `local day - matches java LocalDate epoch day`() {
+        val zone = ZoneId.of("Africa/Douala")
+        val local = ZonedDateTime.of(2026, 11, 7, 12, 0, 0, 0, zone)
+        assertEquals(
+            local.toLocalDate().toEpochDay().toInt(),
+            SurveyTriggerPolicy.localDayEpoch(local.toInstant().toEpochMilli(), zone),
+        )
     }
 }

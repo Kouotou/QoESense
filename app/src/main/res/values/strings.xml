@@ -48,7 +48,7 @@
     <!-- Status screen -->
     <string name="status_subtitle">Background collection status</string>
     <string name="status_collection_title">Collection</string>
-    <string name="status_collection_active_desc">The background service is sampling every ~20s and buffering into Room. A Wi-Fi-only worker uploads batches to Cloud Storage roughly hourly.</string>
+    <string name="status_collection_active_desc">The background service is sampling every ~60s (every ~15s during a video call) and buffering into Room. A Wi-Fi-only worker uploads batches to Cloud Storage roughly hourly.</string>
     <string name="status_collection_inactive_desc">Background collection is off. It normally starts automatically after onboarding - this toggle is mainly for testing.</string>
     <string name="status_label_buffered_samples">Buffered samples</string>
     <string name="status_label_last_upload">Last upload</string>

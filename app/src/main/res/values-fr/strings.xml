@@ -48,7 +48,7 @@
     <!-- Status screen -->
     <string name="status_subtitle">État de la collecte en arrière-plan</string>
     <string name="status_collection_title">Collecte</string>
-    <string name="status_collection_active_desc">Le service en arrière-plan effectue une mesure environ toutes les 20 s et les met en mémoire tampon dans Room. Une tâche limitée au Wi-Fi envoie les lots vers Cloud Storage environ toutes les heures.</string>
+    <string name="status_collection_active_desc">Le service en arrière-plan effectue une mesure environ toutes les 60 s (toutes les 15 s environ pendant un appel vidéo) et les met en mémoire tampon dans Room. Une tâche limitée au Wi-Fi envoie les lots vers Cloud Storage environ toutes les heures.</string>
     <string name="status_collection_inactive_desc">La collecte en arrière-plan est désactivée. Elle démarre normalement automatiquement après la configuration initiale - ce bouton sert surtout aux tests.</string>
     <string name="status_label_buffered_samples">Échantillons en mémoire tampon</string>
     <string name="status_label_last_upload">Dernier envoi</string>
