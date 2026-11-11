@@ -1,0 +1,45 @@
+rules_version = '2';
+// PROPOSED (Phase 5) - not deployed. Production uses ../firestore.rules until approved.
+// Same ownership model as today (a device reaches only its own anonymous UID's documents),
+// plus shape validation, no deletes, and MOS ratings that are create-once: an identical
+// re-write is allowed so the clients' idempotent retry (set on the tap-time ID) still works.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(deviceId) {
+      return request.auth != null && request.auth.uid == deviceId;
+    }
+
+    match /devices/{deviceId} {
+      allow read: if isOwner(deviceId);
+      // Consent record (ConsentRepository / ConsentSink): merge of consentGivenAtMs only.
+      allow create, update: if isOwner(deviceId)
+        && request.resource.data.keys().hasOnly(['consentGivenAtMs'])
+        && request.resource.data.consentGivenAtMs is int;
+      allow delete: if false;
+
+      match /mosResponses/{responseId} {
+        allow read: if isOwner(deviceId);
+        allow create: if isOwner(deviceId) && validMos(request.resource.data);
+        // A retry after a lost acknowledgement re-sends the exact same document.
+        allow update: if isOwner(deviceId) && request.resource.data == resource.data;
+        allow delete: if false;
+      }
+    }
+
+    // v1 keys (reference app) are required; v2 keys (cross-platform app) are optional.
+    function validMos(d) {
+      return d.keys().hasAll(['score', 'submittedAtMs', 'triggerType', 'contextSessionType',
+                              'windowStartMs', 'windowEndMs'])
+        && d.keys().hasOnly(['score', 'submittedAtMs', 'triggerType', 'contextAppPackage',
+                             'contextSessionType', 'windowStartMs', 'windowEndMs', 'platform',
+                             'schemaVersion', 'contextSource', 'presentationMode', 'appId',
+                             'appVersion', 'appBuild', 'utcOffsetMinutes', 'promptedAtMs'])
+        && d.score is int && d.score >= 1 && d.score <= 5
+        && d.triggerType in ['PERIODIC', 'POST_SESSION', 'ANOMALY']
+        && d.contextSessionType in ['NONE', 'SOCIAL_MEDIA', 'VIDEO_CONFERENCING']
+        && d.submittedAtMs is int
+        && d.windowStartMs is int && d.windowEndMs is int && d.windowStartMs <= d.windowEndMs
+        && (!('platform' in d) || d.platform in ['ANDROID', 'IOS']);
+    }
+  }
+}

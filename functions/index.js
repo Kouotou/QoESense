@@ -3,7 +3,7 @@ const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { logger } = require("firebase-functions");
 const { BigQuery } = require("@google-cloud/bigquery");
 const { Storage } = require("@google-cloud/storage");
-const { missingNullableFields } = require("./schema");
+const { missingNullableFields, mosRow, redactUid } = require("./schema");
 
 const bigquery = new BigQuery();
 const storage = new Storage();
@@ -55,6 +55,28 @@ const SAMPLES_SCHEMA = [
   // Additive, nullable (Nov 2026, cross-platform migration): "ANDROID" or "IOS". NULL on every
   // row written before clients started sending it - all of those rows are Android.
   { name: "platform", type: "STRING" },
+  // Contract v2 (approved 2026-11-07, QoESense-CrossPlatform docs/DATA_CONTRACT.md §4). All
+  // additive: NULLABLE, plus capabilitySet REPEATED. v1 lines leave them NULL.
+  { name: "schemaVersion", type: "INTEGER" },
+  { name: "radioStatus", type: "STRING" },
+  { name: "cqiStatus", type: "STRING" },
+  { name: "physicalChannelStatus", type: "STRING" },
+  { name: "networkTypeStatus", type: "STRING" },
+  { name: "connectivityStatus", type: "STRING" },
+  { name: "throughputStatus", type: "STRING" },
+  { name: "rttStatus", type: "STRING" },
+  { name: "foregroundAppStatus", type: "STRING" },
+  { name: "locationStatus", type: "STRING" },
+  { name: "capabilitySet", type: "STRING", mode: "REPEATED" },
+  { name: "appId", type: "STRING" },
+  { name: "appBuild", type: "INTEGER" },
+  { name: "osVersion", type: "STRING" },
+  { name: "utcOffsetMinutes", type: "INTEGER" },
+  { name: "captureDurationMs", type: "INTEGER" },
+  { name: "cellInfoAgeMs", type: "INTEGER" },
+  { name: "locationAgeMs", type: "INTEGER" },
+  { name: "throughputWindowMs", type: "INTEGER" },
+  { name: "rttMethod", type: "STRING" },
 ];
 
 // Mirrors com.example.qoesense.data.model.MosResponse, plus deviceId/responseId pulled from
@@ -72,7 +94,19 @@ const MOS_SCHEMA = [
   { name: "windowEndMs", type: "INTEGER", mode: "REQUIRED" },
   // Additive, nullable - same meaning and NULL convention as samples.platform.
   { name: "platform", type: "STRING" },
+  // Contract v2 (DATA_CONTRACT §10), all NULLABLE.
+  { name: "schemaVersion", type: "INTEGER" },
+  { name: "contextSource", type: "STRING" },
+  { name: "presentationMode", type: "STRING" },
+  { name: "appId", type: "STRING" },
+  { name: "appVersion", type: "STRING" },
+  { name: "appBuild", type: "INTEGER" },
+  { name: "utcOffsetMinutes", type: "INTEGER" },
+  { name: "promptedAtMs", type: "INTEGER" },
 ];
+
+// The Firestore -> BigQuery row mapping lives in schema.js (mosRow), shared with the
+// one-off backfill tool (tools/backfill_mos.js), so both write identical rows.
 
 // Per-instance memo so the schema check costs one metadata read per table per cold start.
 const reconciledTables = new Set();
@@ -120,7 +154,7 @@ exports.loadTelemetryBatch = onObjectFinalized({ region: REGION }, async (event)
   const bucketName = event.data.bucket;
 
   if (!filePath.startsWith("telemetry/") || !filePath.endsWith(".json.gz")) {
-    logger.info(`Ignoring non-telemetry object: ${filePath}`);
+    logger.info("Ignoring non-telemetry object");
     return;
   }
 
@@ -138,11 +172,11 @@ exports.loadTelemetryBatch = onObjectFinalized({ region: REGION }, async (event)
 
   const errors = job.status && job.status.errors;
   if (errors && errors.length > 0) {
-    logger.error(`Load job for ${filePath} finished with errors`, errors);
-    throw new Error(`BigQuery load failed for ${filePath}: ${JSON.stringify(errors)}`);
+    logger.error(`Load job for ${redactUid(filePath)} finished with errors`, errors);
+    throw new Error(`BigQuery load failed for ${redactUid(filePath)}: ${JSON.stringify(errors)}`);
   }
 
-  logger.info(`Loaded ${filePath} into ${DATASET_ID}.${SAMPLES_TABLE_ID}`);
+  logger.info(`Loaded ${redactUid(filePath)} into ${DATASET_ID}.${SAMPLES_TABLE_ID}`);
 });
 
 /**
@@ -164,27 +198,12 @@ exports.exportMosResponse = onDocumentCreated(
     const table = await ensureTable(MOS_TABLE_ID, MOS_SCHEMA);
 
     try {
-      await table.insert([
-        {
-          deviceId,
-          responseId,
-          score: data.score,
-          submittedAtMs: data.submittedAtMs,
-          triggerType: data.triggerType,
-          contextAppPackage: data.contextAppPackage ?? null,
-          contextSessionType: data.contextSessionType,
-          windowStartMs: data.windowStartMs,
-          windowEndMs: data.windowEndMs,
-          // Only sent when the client provided it: right after a column is added, streaming
-          // inserts can briefly reject it as unknown, and current Android builds don't send it.
-          ...(data.platform != null ? { platform: data.platform } : {}),
-        },
-      ]);
+      await table.insert([mosRow(deviceId, responseId, data)]);
     } catch (error) {
-      logger.error(`Failed to insert MOS response ${responseId} for device ${deviceId}`, error);
+      logger.error(`Failed to insert MOS response ${responseId} for device ${redactUid(deviceId)}`, error);
       throw error;
     }
 
-    logger.info(`Exported MOS response ${responseId} for device ${deviceId} into ${DATASET_ID}.${MOS_TABLE_ID}`);
+    logger.info(`Exported MOS response ${responseId} for device ${redactUid(deviceId)} into ${DATASET_ID}.${MOS_TABLE_ID}`);
   },
 );

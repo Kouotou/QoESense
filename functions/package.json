@@ -11,5 +11,9 @@
     "firebase-admin": "^14.3.0",
     "@google-cloud/bigquery": "^9.0.2",
     "@google-cloud/storage": "^8.0.1"
+  },
+  "scripts": {
+    "test": "node --test test/pipeline.test.js",
+    "backfill:mos:dry-run": "node tools/backfill_mos.js"
   }
 }

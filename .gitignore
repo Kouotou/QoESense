@@ -21,3 +21,7 @@ firebase-debug.log
 # Release signing - never commit the keystore or its passwords
 /keystore/
 keystore.properties
+
+# Phase 5 rules-test tooling
+rules-tests/node_modules/
+rules-tests/*.log

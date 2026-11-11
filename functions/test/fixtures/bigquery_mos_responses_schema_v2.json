@@ -1,0 +1,97 @@
+{
+  "status": "PROPOSED - not applied, not deployed (Phase 2 contract, 2026-11-07). Additive only: every v1 column unchanged.",
+  "table": "qoesense_telemetry.mos_responses",
+  "contractVersion": 2,
+  "fields": [
+    {
+      "name": "deviceId",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "responseId",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "score",
+      "type": "INTEGER",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "submittedAtMs",
+      "type": "INTEGER",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "triggerType",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "contextAppPackage",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "contextSessionType",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "windowStartMs",
+      "type": "INTEGER",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "windowEndMs",
+      "type": "INTEGER",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "platform",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "schemaVersion",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "contextSource",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "presentationMode",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "appId",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "appVersion",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "appBuild",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "utcOffsetMinutes",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "promptedAtMs",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
+    }
+  ]
+}

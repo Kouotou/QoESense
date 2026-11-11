@@ -1,0 +1,21 @@
+rules_version = '2';
+// PROPOSED (Phase 5) - not deployed. Production uses ../storage.rules until approved.
+// Same ownership model as today; adds the exact batch path shape, a size bound and no
+// overwrite/delete (both apps always upload a new UUID-named object).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /telemetry/{deviceId}/{day}/{file} {
+      allow read: if false;
+      // Create-only: `resource == null` (no object at this name yet) blocks overwrites, and
+      // `request.resource != null` blocks deletes. A separate "allow update: if false" isn't
+      // enough, because an overwrite can be evaluated as a create (found by the emulator test).
+      allow write: if request.auth != null && request.auth.uid == deviceId
+        && resource == null
+        && request.resource != null
+        && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && file.matches('^[A-Za-z0-9-]+[.]json[.]gz$')
+        && request.resource.size > 0
+        && request.resource.size < 20 * 1024 * 1024;
+    }
+  }
+}
