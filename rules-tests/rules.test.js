@@ -24,6 +24,16 @@ async function env(firestoreRules, storageRules) {
 }
 
 const mosDoc = (ctx, uid, id) => ctx.firestore().doc(`devices/${uid}/mosResponses/${id}`);
+const batchDoc = (ctx, uid, id) => ctx.firestore().doc(`devices/${uid}/telemetryBatches/${id}`);
+// Exactly what FirestoreBatchDestination writes (BatchDocument.fromObjectPath).
+const batch = (id, bytes = GZ) => ({
+  batchId: id,
+  day: "2026-11-14",
+  objectPath: `telemetry/alice/2026-11-14/${id}.json.gz`,
+  sizeBytes: bytes.length,
+  createdAtMs: 1794800000000,
+  ndjsonGz: require("firebase/firestore").Bytes.fromUint8Array(bytes),
+});
 
 test("CURRENT production rules", async (t) => {
   const e = await env(path.join(__dirname, "..", "firestore.rules"), path.join(__dirname, "..", "storage.rules"));
@@ -42,6 +52,11 @@ test("CURRENT production rules", async (t) => {
   });
   await t.test("consent merge works", async () => {
     await assertSucceeds(alice.firestore().doc("devices/alice").set({ consentGivenAtMs: 1 }, { merge: true }));
+  });
+  await t.test("FREE-TIER UPLOADS need no rules change: the owner can already write telemetryBatches; others can't", async () => {
+    await assertSucceeds(batchDoc(alice, "alice", "b1").set(batch("b1")));
+    await assertFails(batchDoc(bob, "alice", "b2").set(batch("b2")));
+    await assertFails(batchDoc(anon, "alice", "b3").set(batch("b3")));
   });
   await t.test("WEAKNESS: an out-of-range score and deleting a rating are both allowed today", async () => {
     await assertSucceeds(mosDoc(alice, "alice", "bad").set({ ...v1(MOS[0]), score: 9 }));
@@ -93,6 +108,17 @@ test("PROPOSED rules", async (t) => {
   await t.test("consent record: the merge both apps do works; extra fields are refused", async () => {
     await assertSucceeds(alice.firestore().doc("devices/alice").set({ consentGivenAtMs: 1 }, { merge: true }));
     await assertFails(alice.firestore().doc("devices/alice").set({ name: "Alice" }, { merge: true }));
+  });
+  await t.test("free-tier batches: create, identical retry; no change, delete, read, foreign or malformed batch", async () => {
+    await assertSucceeds(batchDoc(alice, "alice", "b1").set(batch("b1")));
+    await assertSucceeds(batchDoc(alice, "alice", "b1").set(batch("b1")));
+    await assertFails(batchDoc(alice, "alice", "b1").set({ ...batch("b1"), createdAtMs: 1 }));
+    await assertFails(batchDoc(alice, "alice", "b1").delete());
+    await assertFails(batchDoc(alice, "alice", "b1").get());
+    await assertFails(batchDoc(bob, "alice", "b9").set(batch("b9")));
+    await assertFails(batchDoc(alice, "alice", "b2").set(batch("other-id")));
+    await assertFails(batchDoc(alice, "alice", "b3").set({ ...batch("b3"), latitude: 4 }));
+    await assertFails(batchDoc(alice, "alice", "b4").set({ ...batch("b4"), sizeBytes: 999 }));
   });
   await t.test("storage: the real batch path uploads; wrong owner, bad name, overwrite, delete, read refused", async () => {
     await assertSucceeds(alice.storage().ref(FILE).put(GZ));

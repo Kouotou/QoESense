@@ -13,7 +13,8 @@
     "@google-cloud/storage": "^8.0.1"
   },
   "scripts": {
-    "test": "node --test test/pipeline.test.js",
-    "backfill:mos:dry-run": "node tools/backfill_mos.js"
+    "test": "node --test test/pipeline.test.js test/export.test.js",
+    "backfill:mos:dry-run": "node tools/backfill_mos.js",
+    "export": "node tools/export_firestore.js"
   }
 }

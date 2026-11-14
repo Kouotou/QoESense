@@ -25,3 +25,5 @@ keystore.properties
 # Phase 5 rules-test tooling
 rules-tests/node_modules/
 rules-tests/*.log
+rules-tests/firebase-debug.log
+rules-tests/*-debug.log
