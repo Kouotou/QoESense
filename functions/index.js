@@ -77,6 +77,8 @@ const SAMPLES_SCHEMA = [
   { name: "locationAgeMs", type: "INTEGER" },
   { name: "throughputWindowMs", type: "INTEGER" },
   { name: "rttMethod", type: "STRING" },
+  // Android only: serving-cell changes since the previous sample (2026-11-14). NULL on iOS.
+  { name: "cellChangesSinceLastSample", type: "INTEGER" },
 ];
 
 // Mirrors com.example.qoesense.data.model.MosResponse, plus deviceId/responseId pulled from

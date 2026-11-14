@@ -37,4 +37,50 @@ function toCsv(rows, columns, withHeader) {
   return (withHeader ? [columns.join(","), ...lines] : lines).join("\n") + (lines.length ? "\n" : "");
 }
 
-module.exports = { decodeBatch, newRows, sampleKey, toCsv };
+/**
+ * Whether an existing CSV still has the current header. After an additive column (such as
+ * cellChangesSinceLastSample), appending rows under the old header would misalign every
+ * later row, so the CSV is rebuilt from the NDJSON instead.
+ */
+const csvHeaderMatches = (firstLine, columns) => (firstLine || "").replace(/\r$/, "") === columns.join(",");
+
+/**
+ * The --delete-exported pass (Option A, 2026-11-14): deletes every telemetry batch document
+ * at or before its device's checkpoint, i.e. already written to the export files. It runs
+ * only after those files and the checkpoint are saved, and it's idempotent: an interrupted
+ * pass is finished by the next run. Devices without a checkpoint, or excluded, are untouched.
+ * Rating documents (mosResponses) are never deleted.
+ *
+ * Reads matter on Spark (50,000/day): the batches exported in this run are passed in
+ * `exported` (uid -> DocumentReferences) and deleted without reading them again. The sweep
+ * query afterwards then normally finds nothing, which costs 1 read per device; it only
+ * returns documents left over by an interrupted earlier pass.
+ *
+ * `devices` are Firestore DocumentReferences (or test fakes with the same shape);
+ * `newBatch` returns a WriteBatch. Returns the number of deleted documents.
+ */
+async function deleteExported({
+  devices, checkpoint, exported = new Map(), exclude = new Set(), newBatch, chunk = 400, log = () => {},
+}) {
+  const deleteAll = async (refs) => {
+    for (let i = 0; i < refs.length; i += chunk) {
+      const batch = newBatch();
+      for (const ref of refs.slice(i, i + chunk)) batch.delete(ref);
+      await batch.commit();
+    }
+    return refs.length;
+  };
+  let deleted = 0;
+  for (const device of devices) {
+    const cp = checkpoint[device.id];
+    if (!cp || exclude.has(device.id)) continue;
+    let n = await deleteAll(exported.get(device.id) || []);
+    const leftovers = await device.collection("telemetryBatches").where("createdAtMs", "<=", cp).get();
+    n += await deleteAll(leftovers.docs.map((d) => d.ref));
+    if (n) log(device.id, n);
+    deleted += n;
+  }
+  return deleted;
+}
+
+module.exports = { csvHeaderMatches, decodeBatch, deleteExported, newRows, sampleKey, toCsv };

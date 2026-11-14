@@ -247,6 +247,11 @@
       "name": "rttMethod",
       "type": "STRING",
       "mode": "NULLABLE"
+    },
+    {
+      "name": "cellChangesSinceLastSample",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
     }
   ]
 }

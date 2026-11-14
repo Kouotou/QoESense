@@ -86,13 +86,13 @@ test("main (never deployed): adds `platform` to a live table; v1 still loads, v2
   await assert.rejects(upload(env, "telemetry/uid-123/2026-11-11/b2.json.gz", V2_BATCH), /no such field: schemaVersion/);
 });
 
-test("proposed: reconciles a production-shaped table additively (+21 columns, REPEATED allowed, old rows untouched)", async () => {
+test("proposed: reconciles a production-shaped table additively (+22 columns, REPEATED allowed, old rows untouched)", async () => {
   const live = await productionLikeTables();
   const env = loadFunctions(VERSIONS.proposed);
   const t = seedLiveTable(env.bq, "samples", live.samplesFields, live.sampleRows);
   const before = JSON.stringify(t.rows);
   await upload(env, "telemetry/uid-123/2026-11-11/b1.json.gz", V1_BATCH);
-  assert.equal(t.fields.length, 49);
+  assert.equal(t.fields.length, 50);
   assert.deepEqual(t.fields.slice(0, 28), live.samplesFields, "v1 columns unchanged, same order");
   assert.equal(t.fields.find((f) => f.name === "capabilitySet").mode, "REPEATED");
   assert.ok(t.fields.slice(28).every((f) => (f.mode || "NULLABLE") !== "REQUIRED"));
