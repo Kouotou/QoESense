@@ -1,11 +1,65 @@
 rules_version = '2';
+// DEPLOYED 2026-11-16 (owner approval). Tested in rules-tests/ (emulators, 18/18).
+// Rollback: the previous live ruleset is in C:/Users/Ahmad/QoESense-backups/2026-11-16-rules.
+// Same ownership model as today (a device reaches only its own anonymous UID's documents),
+// plus shape validation, no deletes, and MOS ratings that are create-once: an identical
+// re-write is allowed so the clients' idempotent retry (set on the tap-time ID) still works.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /devices/{deviceId} {
-      allow read, write: if request.auth != null && request.auth.uid == deviceId;
+    function isOwner(deviceId) {
+      return request.auth != null && request.auth.uid == deviceId;
     }
-    match /devices/{deviceId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == deviceId;
+
+    match /devices/{deviceId} {
+      allow read: if isOwner(deviceId);
+      // Consent record (ConsentRepository / ConsentSink): merge of consentGivenAtMs only.
+      allow create, update: if isOwner(deviceId)
+        && request.resource.data.keys().hasOnly(['consentGivenAtMs'])
+        && request.resource.data.consentGivenAtMs is int;
+      allow delete: if false;
+
+      // Free-tier upload target (2026-11-14): one gzipped NDJSON batch per document,
+      // create-once; an identical retry is allowed, the same as for ratings.
+      match /telemetryBatches/{batchId} {
+        allow read: if false;
+        allow create: if isOwner(deviceId) && validBatch(request.resource.data, batchId);
+        allow update: if isOwner(deviceId) && request.resource.data == resource.data;
+        allow delete: if false;
+      }
+
+      match /mosResponses/{responseId} {
+        allow read: if isOwner(deviceId);
+        allow create: if isOwner(deviceId) && validMos(request.resource.data);
+        // A retry after a lost acknowledgement re-sends the exact same document.
+        allow update: if isOwner(deviceId) && request.resource.data == resource.data;
+        allow delete: if false;
+      }
+    }
+
+    function validBatch(d, batchId) {
+      return d.keys().hasOnly(['batchId', 'day', 'objectPath', 'sizeBytes', 'createdAtMs', 'ndjsonGz'])
+        && d.keys().hasAll(['batchId', 'day', 'objectPath', 'sizeBytes', 'createdAtMs', 'ndjsonGz'])
+        && d.batchId == batchId
+        && d.day is string && d.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.ndjsonGz is bytes && d.ndjsonGz.size() > 0 && d.ndjsonGz.size() <= 921600
+        && d.sizeBytes == d.ndjsonGz.size()
+        && d.createdAtMs is int;
+    }
+
+    // v1 keys (reference app) are required; v2 keys (cross-platform app) are optional.
+    function validMos(d) {
+      return d.keys().hasAll(['score', 'submittedAtMs', 'triggerType', 'contextSessionType',
+                              'windowStartMs', 'windowEndMs'])
+        && d.keys().hasOnly(['score', 'submittedAtMs', 'triggerType', 'contextAppPackage',
+                             'contextSessionType', 'windowStartMs', 'windowEndMs', 'platform',
+                             'schemaVersion', 'contextSource', 'presentationMode', 'appId',
+                             'appVersion', 'appBuild', 'utcOffsetMinutes', 'promptedAtMs'])
+        && d.score is int && d.score >= 1 && d.score <= 5
+        && d.triggerType in ['PERIODIC', 'POST_SESSION', 'ANOMALY']
+        && d.contextSessionType in ['NONE', 'SOCIAL_MEDIA', 'VIDEO_CONFERENCING']
+        && d.submittedAtMs is int
+        && d.windowStartMs is int && d.windowEndMs is int && d.windowStartMs <= d.windowEndMs
+        && (!('platform' in d) || d.platform in ['ANDROID', 'IOS']);
     }
   }
 }
